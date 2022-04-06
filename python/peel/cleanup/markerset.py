@@ -5,6 +5,7 @@ import maya.cmds as m
 import os.path
 import os
 import json
+import shutil
 
 """
 Representation of a markerset with a character prefix.  Motive, Arena and mocapclub.com data sets supported
@@ -15,47 +16,41 @@ markersets = {}
 
 
 def markers_dir():
-    
-    # check if an option var is set
-    d = m.optionVar(q="peelMarkerDirectory")
-    if d != 0 and os.path.isdir(d):
-        return d
-    
-    d = os.path.join(os.path.split(__file__)[0], "..", "..", "..", "markersets")
-    d = os.path.abspath(d)
 
-    if not os.path.isdir(d):
-        print("Could not find markerset directory: " + str(d))
-        return None
+    appdata = os.getenv("APPDATA")
+    if appdata is None:
+        raise RuntimeError("Could not get a location to save markersets")
 
-    return d
+    return os.path.join(appdata, "PeelSolve", "markersets")
 
 
-
-def load_all(dir=None):
+def load_all():
 
     global markersets
 
-    if dir is None:
-        dir = markers_dir()
-
-    print("Loading markersets from: " + str(dir))
-
     markersets = {}
 
-    if dir is None:
-        print("Could not find markerset directory")
-        return
+    user_dir = markers_dir()
 
-    if not os.path.isdir(dir):
-        print("Could not find directory: " + str(dir))
-        return
+    if not os.path.isdir(user_dir):
+        os.makedirs(user_dir)
 
-    for i in os.listdir(dir):
+        # copy the installed (read only) markersets to the user directory
+        d = os.path.join(os.path.split(__file__)[0], "..", "..", "..", "markersets")
+        d = os.path.abspath(d)
+        if os.path.isdir(d):
+            for i in os.listdir(d):
+                shutil.copy(os.path.join(d, i), os.path.join(user_dir, i))
+
+
+    print("Loading markersets from: " + str(user_dir))
+
+    for i in os.listdir(user_dir):
 
         mobj = Markerset()
-        name = mobj.load(os.path.join(dir, i))
-        if name is None: continue
+        name = mobj.load(os.path.join(user_dir, i))
+        if name is None:
+            continue
         markersets[name] = mobj
 
     print("%d markersets loaded" % len(markersets))

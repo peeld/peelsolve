@@ -674,7 +674,7 @@ class Gui(QtWidgets.QDialog):
 
     def loadMarkersets(self):
         # load the markersets from the directory
-        markerset.load_all(markerset.markers_dir())
+        markerset.load_all()
         self.markersetSelector.clear()
         self.markersetSelector.addItems(['--select--'] + markerset.markersets.keys())
 
@@ -794,7 +794,8 @@ class Gui(QtWidgets.QDialog):
         if len(ret[0]) > 0:
             if os.path.isfile(ret[0]):
                 cd = m.confirmDialog(m="File exists, overwrite?", b=['yes', 'no'])
-                if cd != 'yes': return
+                if cd != 'yes':
+                    return
             print("saving markerset as: " + str(ret[0]))
             self.markerset.save(name, ret[0])
 
