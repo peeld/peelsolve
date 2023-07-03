@@ -1,7 +1,7 @@
 # Mocap Cleanup - Alastair Macleod 2016
 # GPL License = http://www.gnu.org/licenses/gpl.txt 
 
-from Qt import QtGui, QtCore, QtWidgets
+from PySide2 import QtGui, QtCore, QtWidgets
 import maya.cmds as m
 from maya import OpenMayaUI as omui
 from shiboken2 import wrapInstance
@@ -11,7 +11,7 @@ def mainWindow():
     omui.MQtUtil.mainWindow()
     ptr = omui.MQtUtil.mainWindow()
 
-    widget = wrapInstance(long(ptr), QtWidgets.QWidget)
+    widget = wrapInstance(int(ptr), QtWidgets.QWidget)
 
     #for obj in QtWidgets.qApp.topLevelWidgets():
     #    if obj.objectName() == 'MayaWindow':
