@@ -1,7 +1,7 @@
 # Mocap Cleanup - Alastair Macleod 2016
 # GPL License = http://www.gnu.org/licenses/gpl.txt 
 
-from peel.cleanup import keyTools, datarate
+from peel.cleanup import key_tools, datarate
 from peel.util import curve
 import maya.cmds as m
 
@@ -107,16 +107,16 @@ def assign(source, target, rangemode, replacemode):
     print("In: %f  Out: %f" % (source_in, source_out))
 
     if replacemode == 'swap':
-        keyTools.swap((source, target), source_in, source_out)
+        key_tools.swap((source, target), source_in, source_out)
 
     if replacemode == 'extract':
         # copy the segment over, any clashing keys on the marker will be removed as unlabelled
-        keyTools.extract_range(target, source_in, source_out)
+        key_tools.extract_range(target, source_in, source_out)
         m.cutKey(source, t=(source_in, source_out))
         m.pasteKey(target, option='replace')
 
-    keyTools.set_active_keys(source, delete=True)
-    keyTools.set_active_keys(target)
+    key_tools.set_active_keys(source, delete=True)
+    key_tools.set_active_keys(target)
     # m_cmds.select(target)
 
     m.dgdirty(a=True)

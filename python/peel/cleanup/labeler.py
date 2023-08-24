@@ -1,7 +1,7 @@
 # Mocap Cleanup - Alastair Macleod 2016
 # GPL License = http://www.gnu.org/licenses/gpl.txt 
 
-from peel.cleanup import markerset, keyTools, assign, datarate, gui, localsettings
+from peel.cleanup import markerset, key_tools, assign, datarate, gui, localsettings
 from peel.util import curve
 from peel.cleanup.Qt import QtWidgets, QtCore, QtGui
 import maya.cmds as m
@@ -137,7 +137,7 @@ class Gui(QtWidgets.QDialog):
 
         # display mode combo
         self.displaySelector = QtWidgets.QComboBox(self)
-        self.displaySelector.currentIndexChanged.connect(self.setDisplayMode)
+        self.displaySelector.currentIndexChanged.connect(self.set_display_mode)
         self.displaySelector.addItems(['--select--', 'square', 'circle', 'cross', 'circle/cross'])
         self.formLayout.addRow("Display Markers", self.displaySelector)
 
@@ -229,7 +229,6 @@ class Gui(QtWidgets.QDialog):
             ('Load', self.cb_load),
             ('Save', self.cb_save),
             ('From Selection', self.cb_fromSelection),
-            ('Set Markerset Directory', self.cb_setMarkersetDir),
             ('Refesh', self.loadMarkersets),
             ('Save Markerset', self.cb_save)
         ]:
@@ -345,11 +344,11 @@ class Gui(QtWidgets.QDialog):
                 if cld is not None and len(cld) > 0:
                     m.setAttr(cld[0] + ".displayMode", mode)
 
-    def setDisplayMode(self, value):
+    def set_display_mode(self, value):
         if self.markerset is None: return
         prefix = self.currentPrefix()
         mode = self.getMode(value)
-        if mode is not None: self.markerset.setDisplayMode(prefix, mode)
+        if mode is not None: self.markerset.set_display_mode(prefix, mode)
 
     def currentPrefix(self):
 
@@ -436,7 +435,7 @@ class Gui(QtWidgets.QDialog):
 
             for i in self.markerset.markers(prefix):
                 try:
-                    keyTools.toggle_connect_vis([i], force=False)
+                    key_tools.toggle_connect_vis([i], force=False)
                     m.setAttr(i + ".v", state)
                     con = m.listConnections(i + ".t", s=False, d=True, sh=True)
                     if con is not None:
@@ -545,7 +544,7 @@ class Gui(QtWidgets.QDialog):
         self.raise_()
         self.activateWindow()
 
-        mobj = markerset.fromSelection()
+        mobj = markerset.from_selection()
         self.customSets[name] = mobj
         self.markerset = mobj
         self.addMarkerset(name, mobj)
@@ -571,7 +570,7 @@ class Gui(QtWidgets.QDialog):
 
             m.select(cl=True)
             for item in items:
-                fixed = keyTools.fix_name(item)
+                fixed = key_tools.fix_name(item)
                 if m.objExists(fixed): m.select(fixed, add=True)
 
     def cb_change(self, item):
@@ -637,10 +636,10 @@ class Gui(QtWidgets.QDialog):
 
         if rangemode == 'fill':
             print("Fill: " + source + " for: " + dest)
-            cmd = "from " + localsettings.module + " import keyTools as kt;"
+            cmd = "from " + localsettings.module + " import key_tools as kt;"
             cmd += 'kt.fill("%s", "%s")' % (dest, source)
             m.evalDeferred(cmd)
-            # keyTools.fill( dest, source )
+            # key_tools.fill( dest, source )
 
             cmd = "from " + localsettings.module + " import labeler;"
             cmd += "labeler.INSTANCE.draw();"
@@ -670,13 +669,13 @@ class Gui(QtWidgets.QDialog):
         self.progressRange(len(items))
         for i in range(len(items)):
             self.progressValue(i, items[i])
-            keyTools.set_active_keys(items[i])
+            key_tools.set_active_keys(items[i])
 
     def loadMarkersets(self):
         # load the markersets from the directory
         markerset.load_all()
         self.markersetSelector.clear()
-        self.markersetSelector.addItems(['--select--'] + markerset.markersets.keys())
+        self.markersetSelector.addItems(['--select--'] + list(markerset.markersets.keys()))
 
     def cb_drawLines(self, x=None):
         if None in [self.markerset, self.prefix]:
@@ -684,11 +683,11 @@ class Gui(QtWidgets.QDialog):
             return
 
         print("drawing lines for " + str(self.prefix))
-        self.markerset.drawLines(self.prefix)
+        self.markerset.draw_lines(self.prefix)
 
     def cb_color(self, colorIndex):
         if None in [self.markerset, self.prefix]: return
-        self.markerset.setColor(self.prefix, colorIndex)
+        self.markerset.set_color(self.prefix, colorIndex)
 
     def cb_selectMarkers(self, x=None):
         """ callback to select markers """
@@ -706,9 +705,9 @@ class Gui(QtWidgets.QDialog):
     def cb_clearMarkerLines(self, x=None):
         if None in [self.markerset, self.prefix]: return
         # this will clear all lines  and the group
-        self.markerset.drawLines(self.prefix, clear=True)
+        self.markerset.draw_lines(self.prefix, clear=True)
         # this will clear all lines
-        markerset.clearMarkerLines()
+        markerset.clear_marker_lines()
 
     def cb_setActive(self, x=None):
         self.setActiveKeys(m.ls(sl=True))
@@ -716,16 +715,16 @@ class Gui(QtWidgets.QDialog):
     def cb_display(self, x=None):
 
         # set all markers to being connect-vis
-        keyTools.toggle_connect_vis(force=True)
+        key_tools.toggle_connect_vis(force=True)
 
         # for every marker in every prefix
         for prefix in self.markerset.prefixes():
             # set markerset markers to not being connect vis
             markers = self.markerset.markers(prefix)
-            keyTools.connect_vis(markers, False)
+            key_tools.connect_vis(markers, False)
 
     def cb_selectEmpty(self, x=None):
-        keyTools.select_empty()
+        key_tools.select_empty()
 
     def cb_selectUnlabelled(self, x=None):
         """ select markers not associcated with a current (selected) markersets """
@@ -763,7 +762,7 @@ class Gui(QtWidgets.QDialog):
 
     def cb_drawLine(self):
 
-        # see markerset.MarkersetBas.drawLines()
+        # see markerset.MarkersetBas.draw_lines()
 
         sel = m.ls(sl=True, type='transform')
         if len(sel) < 2: return
@@ -775,21 +774,25 @@ class Gui(QtWidgets.QDialog):
             group = m.group(em=True, name="LINES", parent=topNode)
             m.setAttr(group + ".template", 1)
 
-        loc = m.createNode("PeelLine", p=group, name=sel[0])
-        for i in range(len(sel)):
-            m.connectAttr(sel[i] + ".translate", loc + ".points[%d]" % i)
+        line_nodes = []
+        loc = m.createNode("PeelLine", p=group, name=sel[0] + "LineShape")
+        for i, marker in enumerate(sel):
+            m.connectAttr(marker + ".translate", loc + ".points[%d]" % i)
 
-    def cb_setMarkersetDir(self):
-        ret = QtWidgets.QFileDialog.getExistingDirectory(self, "Markerset Directory")
-        if ret is None or len(ret) == 0: return
-        m.optionVar(sv=("peelMarkersDirectory", ret))
+            if self.prefix is not None and marker.startswith(self.prefix):
+                line_nodes.append(marker[len(self.prefix):])
+
+        if self.prefix is not None and len(line_nodes) == len(sel):
+            self.markerset.lineList.append(line_nodes)
 
     def cb_save(self):
 
         name = self.markersetSelector.currentText()
         f = name + ".markerset"
         dir = markerset.markers_dir()
-        if dir is not None: f = os.path.join(dir, f)
+        if dir is not None:
+            f = os.path.join(dir, f)
+
         ret = QtWidgets.QFileDialog.getSaveFileName(self, "Save Markerset", f)
         if len(ret[0]) > 0:
             if os.path.isfile(ret[0]):

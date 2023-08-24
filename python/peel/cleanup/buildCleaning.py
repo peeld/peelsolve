@@ -2,7 +2,7 @@
 # GPL License = http://www.gnu.org/licenses/gpl.txt 
 
 from peel.cleanup import markerset as ms
-from peel.cleanup import keyTools as kt
+from peel.cleanup import key_tools as kt
 from peel.cleanup import datarate
 import maya.cmds as m
 
@@ -15,7 +15,7 @@ def run():
     datarate.setSceneRate()
 
     # set default to circle/cross
-    ms.displayModeAll(3)
+    ms.display_mode_all(3)
 
     # set all markers to having visibility connected to active
     kt.toggle_connect_vis(force=True)
@@ -39,8 +39,8 @@ def run():
                 kt.toggle_connect_vis([pfx + mkr], force=False)
 
                 # set the color
-        mobj.setColor(pfx, col)
+        mobj.set_color(pfx, col)
         col += 1
 
         # draw th lines
-        mobj.drawLines(pfx)
+        mobj.draw_lines(pfx)

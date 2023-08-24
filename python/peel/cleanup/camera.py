@@ -31,7 +31,7 @@ def clear():
         if i and m.objExists(i): m.delete(i)
 
 
-def rigidbodyCam():
+def rigidbody_cam():
     global rigidbody
     global camera
     global lastCam

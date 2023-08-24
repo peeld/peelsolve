@@ -16,7 +16,6 @@ markersets = {}
 
 
 def markers_dir():
-
     appdata = os.getenv("APPDATA")
     if appdata is None:
         raise RuntimeError("Could not get a location to save markersets")
@@ -24,8 +23,22 @@ def markers_dir():
     return os.path.join(appdata, "PeelSolve", "markersets")
 
 
-def load_all():
+def copy_default():
+    global markersets
 
+    user_dir = markers_dir()
+
+    print("Creating user copy of markersets")
+
+    # copy the installed (read only) markersets to the user directory
+    d = os.path.join(os.path.split(__file__)[0], "markersets")
+    d = os.path.abspath(d)
+    if os.path.isdir(d):
+        for i in os.listdir(d):
+            shutil.copy(os.path.join(d, i), os.path.join(user_dir, i))
+
+
+def load_all():
     global markersets
 
     markersets = {}
@@ -34,14 +47,7 @@ def load_all():
 
     if not os.path.isdir(user_dir):
         os.makedirs(user_dir)
-
-        # copy the installed (read only) markersets to the user directory
-        d = os.path.join(os.path.split(__file__)[0], "..", "..", "..", "markersets")
-        d = os.path.abspath(d)
-        if os.path.isdir(d):
-            for i in os.listdir(d):
-                shutil.copy(os.path.join(d, i), os.path.join(user_dir, i))
-
+        copy_default()
 
     print("Loading markersets from: " + str(user_dir))
 
@@ -57,7 +63,6 @@ def load_all():
 
 
 def all():
-
     """ finds the prefixes and markersets in the scene
     :return: [ (prefix, markerset-name), ... ]
     """
@@ -76,12 +81,12 @@ def all():
 
 def guess(prefix, items=None):
     """ find the markerset with the most matching markers, returns the name """
-    
+
     global markersets
-    
+
     if len(markersets) == 0:
         raise RuntimeError("No Markersets loaded")
-    
+
     results = []
     for ms in markersets:
         found, missing = markersets[ms].test(prefix, items)
@@ -94,7 +99,6 @@ def guess(prefix, items=None):
 
 
 def prefixes():
-
     """ returns the set() of all possible prefixes.  All markersets are tested """
 
     global markersets
@@ -109,42 +113,48 @@ def prefixes():
 
     return res
 
-def displayModeAll( mode, value =3 ) :
 
+def display_mode_all(mode, value=3):
     """ sets the display mode for all markers in the scene.  Sets the .displayMode attribute on all
     peelSquareLocators """
 
-    for i in m.ls(type="peelSquareLocator") :
-       parent = m.listRelatives(i, p=True)[0]
-       if m.objExists( parent + '.displayMode' ) :
-           m.setAttr( parent + '.displayMode', 3 )
-           
+    for i in m.ls(type="peelSquareLocator"):
+        parent = m.listRelatives(i, p=True)[0]
+        if m.objExists(parent + '.displayMode'):
+            m.setAttr(parent + '.displayMode', 3)
+
 
 class Markerset(object):
-
     """ The base class for a markerset.
      A markerset contains:
        - a list of the marker names (without a prefix)
        - the lines that connect the markers (optional)
        - rigidbody definitions (optional)
      """
-    
-    markerList   = []
-    lineList     = []
-    rigidbodies  = []
 
-    def markers(self, prefix=None) : 
+    def __init__(self):
+
+        self.markerList = []
+        self.lineList = []
+        self.rigidbodies = []
+        self.name = ""
+
+    def __str__(self):
+        v = (self.name, len(self.markerList), len(self.lineList), len(self.rigidbodies))
+        return "Markerset: %s  Markers: %d Lines: %d  Rigidbodies: %d" % v
+
+    def markers(self, prefix=None):
         """ subclass will return a list of all the markers in the markerset """
         if prefix is None:
             return self.markerList
-            
+
         return [prefix + i for i in self.markerList]
 
-    def lines(self) :
+    def lines(self):
         """ subclass will return a 2d list of line connections [ [ 'a', 'b', 'c'], ['b', 'd', 'e'] ] """
         return self.lineList
 
-    def drawLines(self, prefix, clear=False):
+    def draw_lines(self, prefix, clear=False):
 
         """ draws the lines between the markers, if clear is set it will delete all lines for all markerset """
 
@@ -156,63 +166,61 @@ class Markerset(object):
         if not m.objExists(marker0):
             m.warning("Could not find markers to draw lines: " + marker0)
             return
-            
-        topNode = m.listRelatives(marker0, p=True)[0]
 
-        group = topNode + "|LINES"
+        top_node = m.listRelatives(marker0, p=True)[0]
 
-        if clear :
-            if m.objExists( group ) :
-                m.delete( group )
+        group = top_node + "|LINES"
+
+        if clear:
+            if m.objExists(group):
+                m.delete(group)
             return
-            
-        if not m.objExists(group) :
-            group = m.group(em=True, name="LINES", parent=topNode)
-            m.setAttr( group + ".template", 1 )
+
+        if not m.objExists(group):
+            group = m.group(em=True, name="LINES", parent=top_node)
+            m.setAttr(group + ".template", 1)
 
         for grp in self.lineList:
-        
+
             # check all markers in the group exist
             check = True
             for marker in grp:
-                
-                if not m.objExists( prefix + marker) :
-                    m.warning("Marker missing while draing lines, skipping group.  " + prefix + marker)
+
+                if not m.objExists(prefix + marker):
+                    m.warning("Marker missing while drawing lines, skipping group.  " + prefix + marker)
                     check = False
-                
+
             if not check:
                 continue
-                    
+
             # create the line
-            loc = m.createNode("PeelLine", p=group, name=grp[0])
+            loc = m.createNode("PeelLine", p=group, name=grp[0] + "LineShape")
             for i, marker in enumerate(grp):
-                m.connectAttr( prefix + marker + ".translate", loc + ".points[%d]" % i)
+                m.connectAttr(prefix + marker + ".translate", loc + ".points[%d]" % i)
 
-
-    def setColor( self, prefix, color) :
+    def set_color(self, prefix, color):
         """ Changes the marker colors """
         for marker in self.markerList:
             find = m.ls(prefix + marker, type='transform')
             if len(find) == 0:
-                print ("Skipping color on: " + prefix + marker)
+                print("Skipping color on: " + prefix + marker)
                 continue
 
             for i in find:
                 chld = m.listRelatives(i, s=True)
-                if chld is not None and len(chld) > 0 :
+                if chld is not None and len(chld) > 0:
                     m.setAttr(chld[0] + ".overrideEnabled", 1)
                     m.setAttr(chld[0] + ".overrideColor", color)
 
-
-    def setDisplayMode( self, prefix, mode ) :
+    def set_display_mode(self, prefix, mode):
 
         """ sets the display mode for the markers in the set """
 
-        for marker in self.markerList :
-            if not m.objExists( prefix  + marker ) : continue
-            cld = m.listRelatives( prefix + marker, s=True)
-            if len(cld) == 0 : continue
-            m.setAttr( cld[0] + ".displayMode", mode )
+        for marker in self.markerList:
+            if not m.objExists(prefix + marker): continue
+            cld = m.listRelatives(prefix + marker, s=True)
+            if len(cld) == 0: continue
+            m.setAttr(cld[0] + ".displayMode", mode)
 
     def test(self, prefix, items=None):
 
@@ -227,14 +235,14 @@ class Markerset(object):
         for marker in self.markerList:
 
             if items is None:
-                check = m.objExists(prefix + marker) 
+                check = m.objExists(prefix + marker)
             else:
                 check = prefix + marker in items
 
             if check:
-                found.append(prefix+marker)
+                found.append(prefix + marker)
             else:
-                missing.append(prefix+marker)
+                missing.append(prefix + marker)
 
         # return the number of missing markers
         return found, missing
@@ -248,7 +256,7 @@ class Markerset(object):
             for marker in self.markerList:
                 if pp.endswith(marker):
                     pfx.add(pp[: -len(marker)])
-                 
+
         return list(pfx)
 
     def prefixed(self, prefix):
@@ -264,105 +272,104 @@ class Markerset(object):
         """ select the markers for the given prefix """
 
         m.select(cl=True)
-        for marker in self.markerList :
-            scene_marker = m.ls(prefix+marker, type='transform', l=True)
+        for marker in self.markerList:
+            scene_marker = m.ls(prefix + marker, type='transform', l=True)
             if scene_marker is None or len(scene_marker) == 0:
                 continue
-                
+
             if len(scene_marker) > 0:
                 m.warning("More than one marker named: " + marker + " while selecting")
-                
+
             for i in scene_marker:
-                m.select(scene_marker, add=True )
-                
-    def save(self, name, fileName):
-    
+                m.select(scene_marker, add=True)
+
+    def save(self, name, file_name):
+
         data = {'name': name,
                 'markers': self.markerList,
                 'lines': self.lineList,
                 'rigidbodies': self.rigidbodies}
-            
+
         data = json.dumps(data, indent=4)
-        
-        fp = open(fileName, 'w')
-        if not fp :
-            m.error("could not open file: " + str(fileName))
+
+        fp = open(file_name, 'w')
+        if not fp:
+            m.error("could not open file: " + str(file_name))
             return
-        
+
         fp.write(data)
         fp.close()
-        
-    def load(self, fileName):
-    
+
+    def load(self, file_name):
+
         fp = None
-        try :
-            fp= open( fileName, 'r')
-        except Exception as e :
+        try:
+            fp = open(file_name, 'r')
+        except Exception as e:
             m.warning(str(e))
-            
-        if not fp :
-            m.warning("could not open file: " + str(fileName))
+
+        if not fp:
+            m.warning("could not open file: " + str(file_name))
             return
-        
-        try :
+
+        try:
             data = json.load(fp)
-        except Exception as e :
-            m.warning( fileName + " " + str(e) )
+        except Exception as e:
+            m.warning(file_name + " " + str(e))
             fp.close()
             return None
-            
-        self.markerList   = data['markers'] if 'markers' in data else []
-        self.lineList     = data['lines']   if 'lines'   in data else []
-        self.rigidbodies  = data['rigidbodies'] if 'rigidbodies' in data else []
+
+        self.markerList = data['markers'] if 'markers' in data else []
+        self.lineList = data['lines'] if 'lines' in data else []
+        self.rigidbodies = data['rigidbodies'] if 'rigidbodies' in data else []
+        self.name = data['name']
 
         ret = data['name']
         fp.close()
         return ret
-        
-        
 
-def fromSelection() :
 
+def from_selection():
     """ Create a new markerset from the selected markers in the scene """
 
     # new empty markerset
-    ms    = Markerset()
+    ms = Markerset()
 
     # get selection and strip prefix
-    sel   = m.ls(sl=True, l=True)
-    names = [ i[ i.rfind('|')+1 : ] for i in m.ls(sl=True, l=True) ]
-    prefix = os.path.commonprefix( names )
-    ms.markerList = [ i[len(prefix):] for i in names ]
-    
+    sel = m.ls(sl=True, l=True)
+    names = [i[i.rfind('|') + 1:] for i in m.ls(sl=True, l=True)]
+    prefix = os.path.commonprefix(names)
+    ms.markerList = [i[len(prefix):] for i in names]
+
     # get connected PeelLine nodes
     nodes = set()
-    for node in sel :
-        con =  m.listConnections( node, s=False,d=True, p=True,type='PeelLine' )
-        if con is None : continue        
-        for c in con : nodes.add ( c.split('.')[0] )
-        
+    for node in sel:
+        con = m.listConnections(node, s=False, d=True, p=True, type='PeelLine')
+        if con is None: continue
+        for c in con: nodes.add(c.split('.')[0])
+
     # save the lines
     ms.lineList = []
-    
-    for line in nodes : 
+
+    for line in nodes:
 
         items = []
-        for i in range(  m.getAttr( line + '.points', size=True) ) :
-            src = m.listConnections( line + ".points[%d]" % i, s=True, d=False,p=True )
+        for i in range(m.getAttr(line + '.points', size=True)):
+            src = m.listConnections(line + ".points[%d]" % i, s=True, d=False, p=True)
             if src is None: continue
             src = src[0]
-            src = src[ : src.find('.') ]
-            if '|' in src : src = src[ src.rfind('|') +1 : ]
-            
-            if len(prefix) > 0 :
-                if not src.startswith(prefix) :
+            src = src[: src.find('.')]
+            if '|' in src: src = src[src.rfind('|') + 1:]
+
+            if len(prefix) > 0:
+                if not src.startswith(prefix):
                     m.warning("No prefix on: " + src[0])
                     continue
-                items.append( src[len(prefix):] )
-            else :
-                items.append( src )
-                
-        ms.lineList.append( items )
+                items.append(src[len(prefix):])
+            else:
+                items.append(src)
+
+        ms.lineList.append(items)
 
     # save the rigidbodies
     items = {}
@@ -378,30 +385,22 @@ def fromSelection() :
     for mlist in items.values():
         ms.rigidbodies.append(tuple(mlist))
 
-    return ms        
+    return ms
 
 
-def clearMarkerLines() :
-
+def clear_marker_lines():
     """ remove all marker lines in the scene (leaves the group) """
 
     delme = set()
-    for i in m.ls(type="PeelLine") :
-        delme.add( m.listRelatives( i, p=True)[0] )
+    for i in m.ls(type="PeelLine"):
+        delme.add(m.listRelatives(i, p=True)[0])
 
-    m.delete( list(delme) )
+    m.delete(list(delme))
 
 
-def setDisplayMode( mode ) :
-
+def set_display_mode(mode):
     """ sets the display mode for all markers """
 
-    for marker in m.ls(type="peelSquareLocator") :
-        m.setAttr(marker + ".displayMode", mode )
+    for marker in m.ls(type="peelSquareLocator"):
+        m.setAttr(marker + ".displayMode", mode)
     return
-
-
-
-
-
-

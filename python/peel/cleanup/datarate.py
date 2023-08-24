@@ -134,7 +134,7 @@ def channelRate( chan ) :
 
     ''' return the interval of a particular channel (node.attr).  nodeRate() is used first, then guess() '''
 
-    if type(chan) not in [ str, unicode ] : raise ValueError( "Invalid channel: " + str( chan ) )
+    # if type(chan) not in [ str, unicode ] : raise ValueError( "Invalid channel: " + str( chan ) )
     if '.' not in chan : raise ValueError( "Value is not a channel: " + str(chan))
 
     node, attr = chan.split('.')

@@ -57,7 +57,7 @@ def NaturalPointSetup(prefix = "") :
         ]
 
     #draw lines between the locators
-    drawLines(conns, prefix)  
+    draw_lines(conns, prefix)
 
     # toggle visibility of the locators when they are not active
     toggleVis() 
@@ -112,7 +112,7 @@ def colorMarkers(markerList, prefix = "", color = 17) :
         m.setAttr("%s%sShape.overrideColor"   % (prefix, i), color);
 
 
-def drawLines(conns, prefix = "") :
+def draw_lines(conns, prefix = "") :
 
     # uncomment the next two lines if you want to delete all lines first
         #lines = m_cmds.ls(type="PeelLine")

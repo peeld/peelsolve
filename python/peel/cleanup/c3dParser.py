@@ -111,7 +111,7 @@ class C3D(object):
         #h2 = struct.unpack('b', self.header[1])[0]
         h1 = self.header[0]
         h2 = self.header[1]
-        if ord(h1) != 2 and ord(h2) != 80:
+        if h1 != 2 and h2 != 128:
             print(str(h1))
             print(str(h2))
             raise RuntimeError("Invalid c3d file")

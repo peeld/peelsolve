@@ -27,7 +27,7 @@ Python wrappers for useful maya api functions
 """
 
 
-def animCurve(node, attr, create=False):
+def anim_curve(node, attr, create=False):
     """ returns a MFnAnimCurve object for the node.attr.
         If create is True the curve will be created, removing any existing curve """
 

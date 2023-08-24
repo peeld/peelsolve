@@ -295,7 +295,7 @@ def gui_verify():
     m.textScrollList("peelMocapTSL", e=True, lf=(4, "obliqueLabelFont"))
 
 
-def gui_drawLines(x):
+def gui_draw_lines(x):
     rig = gui_getRig()
     rig.drawMarkerLines()
 
@@ -344,7 +344,7 @@ def gui():
     m.textFieldGrp("peelMocapMarkerStatus", en=False, l="")
     m.textScrollList("peelMocapTSL")
     m.button(l="Select Markers", c=gui_select)
-    m.button(l="Draw Lines", c=gui_drawLines)
+    m.button(l="Draw Lines", c=gui_draw_lines)
     m.button(l="Test Solver", c=gui_createSolverTest)
     m.button(l="Create Solver", c=gui_createSolver)
 

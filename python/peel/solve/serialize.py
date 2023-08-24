@@ -70,7 +70,7 @@ def data(root, strip_marker=None, strip_joint=None):
 
     # Active Markers
 
-    for activeMarker in m.peelSolve(s=root, la=True):
+    for activeMarker in m.peelSolve(s=root, la=True, ns=True):
 
         markerName = activeMarker
         if '|' in markerName: markerName = markerName.split('|')[-1]

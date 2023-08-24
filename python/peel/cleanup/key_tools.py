@@ -180,8 +180,6 @@ def set_active_keys(node, delete=False):
         m.warning(str(e))
         return
 
-    if type(node) not in [str, unicode]: raise ValueError("Invalid type for setActiveKeys: " + str(type(node)))
-
     interval = datarate.get(node)
     if interval is None:
         m.warning("No interval for node while setting active keys: " + str(node))
@@ -808,8 +806,12 @@ def connect_vis(markers, connect=True):
 
         if connect:
             try:
+                print(i)
                 if not m.isConnected(i + ".active", i + ".v"):
+                    print("Connecting")
                     m.connectAttr(i + ".active", i + ".v", f=True)
+                else:
+                    print("Skip")
             except RuntimeError as e:
                 print("Could not connect: " + i + ' ' + str(e))
         else:
@@ -979,18 +981,24 @@ def fill_channel(gapChannel, fillChannel=None, currentTime=None):
 
     if fillChannel is None:
 
-        print("Filling gaps in: %s from %g to %g" % (gapChannel, prev, next))
+        print("Filling gaps in: %s from %g to %g" % (gapChannel, gap_left_key, gap_right_key))
 
         rate = datarate.channelRate(gapChannel)
         if rate is None: raise RuntimeError("Could not determine data rate")
 
-        i = prev + rate
-        while i < next:
-            normalized = (i - gap_left_key) / (next - gap_right_key)
-            newval = normalized * gapRange + gap_curve_obj[prev]
-            print("%s  %f  %f" % (gapChannel, newval, i))
-            m.setKeyframe(gapChannel, v=newval, t=i)
-            i += rate
+        time_range = gap_right_key - gap_left_key
+        value_step = (gap_right_value - gap_left_value) / (time_range / rate)
+
+        print(time_range)
+        print(value_step)
+
+        key = gap_left_key + rate
+        value = gap_left_value + value_step
+
+        while key < gap_right_key:
+            m.setKeyframe(gapChannel, v=value, t=key)
+            key += rate
+            value += value_step
 
     else:
 

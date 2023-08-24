@@ -482,3 +482,13 @@ def test(root):
             m.parent("x_" + i, "x_" + parent)
 
 
+def motive_setup(prefix):
+
+    d = { 'WaistRFront': (-12.2, 1.5, 12.5),
+          'WaistLFront':  (12.2, 1.5, 12.5),
+          'WaistLBack':  (-12.2, 1.5, -12.5),
+          'WaistRBack': (12.2, 1.5, -12.5) }
+
+    for node, tform in d.items():
+        marker, shape = locator.line(prefix + node, "Hips")
+        m.setAttr(marker + ".t", *tform)

@@ -39,7 +39,7 @@ class fcurve(object):
     def __init__(self, node=None, attr=None):
         """ empty fcurve """
 
-        if attr is None and isinstance(node, basestring) and '.' in node:
+        if attr is None and isinstance(node, str) and '.' in node:
             self.node, self.attr = node.split(".")
         else:
             self.node = node
@@ -215,7 +215,7 @@ class channel(object):
 
     def deltas(self):
 
-        """ returns the pyhsical distance (length) between keys.  returns (keys, deltas) """
+        """ returns the physical distance (length) between keys.  returns (keys, deltas) """
 
         keys, vals = zip(*sorted(self.data.items()))
         deltas = []
@@ -305,6 +305,31 @@ class channel(object):
                 last_delta = delta
 
         return res
+
+    def find_swaps(self, other):
+
+        k1, v1 = zip(*sorted(self.data.items()))
+        k2, v2 = zip(*sorted(other.data.items()))
+
+        ret = []
+
+        for  i in range(1, len(k1) -1):
+
+            t1 = k1[i-1]
+            t2 = k1[i]
+
+            if t1 not in k2 or t2 not in k2:
+                continue
+
+            delta1 = sum([(b - a) * (b - a) for a, b in zip(self.data[t1], self.data[t2])])
+            delta2 = sum([(b - a) * (b - a) for a, b in zip(other.data[t1], other.data[t2])])
+            swap1 = sum([(b - a) * (b - a) for a, b in zip(self.data[t1], other.data[t2])])
+            swap2 = sum([(b - a) * (b - a) for a, b in zip(other.data[t1], self.data[t2])])
+
+            if delta1 + delta2 > swap1 + swap2:
+                ret.append(t2)
+
+        return ret
 
 
 def ls():

@@ -20,7 +20,7 @@ def shelf() :
     except RuntimeError:
         pass
 
-    kt = 'import peel.cleanup.keyTools as kt;kt.'
+    kt = 'import peel.cleanup.key_tools as kt;kt.'
     mx = 'import peel.cleanup.mocap as mx;mx.'
     ms = 'import peel.cleanup.markerset as mz;mz.'
     la = 'import peel.cleanup.labeler as la;la.'
@@ -58,7 +58,7 @@ def keys():
 
     ''' creates some useful keyboard shortcuts (removing existing ones if they exist) '''
 
-    kt = "import mocapCleanup.keyTools as kt;kt."
+    kt = "import mocapCleanup.key_tools as kt;kt."
     la = "import mocapCleanup.labeler as la;la."
 
     cmds = [["Home",       "alt", "SetCurrent1",      "Set Current 1",     "p", kt + "setCurrent('1')"],

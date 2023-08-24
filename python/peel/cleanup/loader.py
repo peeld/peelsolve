@@ -7,9 +7,9 @@ import json
 import math
 from functools import partial
 
-from peel.cleanup.Qt import QtWidgets, QtCore, QtWidgets
+from peel.cleanup.Qt import QtWidgets, QtCore
 import maya.cmds as m_cmds
-from peel.cleanup import buildCleaning, buildSolving, gui, fileCache, mocapData, actions, markerset
+from peel.cleanup import buildCleaning, buildSolving, gui, mocapData, actions, markerset
 from peel.util import roots
 import peel
 
@@ -126,9 +126,6 @@ class Loader(baseclass1, baseclass2):
 
         if len(markerset.markersets) == 0:
             m_cmds.warning("No marker sets loaded.")
-
-        self.cache = fileCache.FileCache()
-        self.pathPrefix = "/2"
 
         # dont move this next line to further down - it needs to be here for some reason
         main_layout = QtWidgets.QVBoxLayout(self)
