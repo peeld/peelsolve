@@ -70,7 +70,7 @@ def anim_curve(node, attr, create=False):
 def apply_curve(node, attr, data, stepped=False):
     """ creates an anim curve for the data (dict) """
 
-    k = data.keys()
+    k = list(data.keys())
     v = data.values()
 
     tt = oma.MFnAnimCurve.kTangentStep if stepped else oma.MFnAnimCurve.kTangentGlobal
@@ -84,7 +84,7 @@ def apply_curve(node, attr, data, stepped=False):
 
     su = om.MScriptUtil()
     su.createFromList(v, len(v))
-    x = animCurve(node, attr, create=True)
+    x = anim_curve(node, attr, create=True)
     if x is None: return
     fn, dgmod = x
     fn.addKeys(times, om.MDoubleArray(su.asDoublePtr(), len(v)), oma.MFnAnimCurve.kTangentGlobal, tt)

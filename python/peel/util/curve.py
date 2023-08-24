@@ -94,7 +94,7 @@ class fcurve(object):
 
     def keys(self):
         """ return the keys """
-        return sorted(self.data.keys())
+        return sorted(list(self.data.keys()))
 
     def values(self):
         """ return the values """
