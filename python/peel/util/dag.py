@@ -71,7 +71,7 @@ def apply_curve(node, attr, data, stepped=False):
     """ creates an anim curve for the data (dict) """
 
     k = list(data.keys())
-    v = data.values()
+    v = list(data.values())
 
     tt = oma.MFnAnimCurve.kTangentStep if stepped else oma.MFnAnimCurve.kTangentGlobal
 
