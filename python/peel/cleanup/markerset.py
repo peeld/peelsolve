@@ -6,6 +6,7 @@ import os.path
 import os
 import json
 import shutil
+import platform
 
 """
 Representation of a markerset with a character prefix.  Motive, Arena and mocapclub.com data sets supported
@@ -16,11 +17,16 @@ markersets = {}
 
 
 def markers_dir():
-    appdata = os.getenv("APPDATA")
+
+    appdata = None
+    if platform.system() == "Windows":
+        appdata = os.getenv("APPDATA")
+    if platform.system() == "Darwin":
+        appdata = os.path.join(os.path.expanduser("~"), "Library", "Application Support")
     if appdata is None:
         raise RuntimeError("Could not get a location to save markersets")
 
-    return os.path.join(appdata, "PeelSolve", "markersets")
+    return os.path.join(appdata, "PeelSolve2", "markersets")
 
 
 def copy_default():
